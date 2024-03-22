@@ -1,0 +1,254 @@
+# The following exercieses are from the following resource from page 158 to 160.
+# resource: [Friendly] Discrete Data Analysis with R: visualization and modeling techniques for categorical and count data, Michael Friendly, et al, ISBN: 978-1-4987-2583-5, CRC Press, 2015.  [Available online at Seneca library]
+
+**Exercise 4.1** The data set fat, created below, gives a 2*2 table recording the level of cholesterol in diet and the presence of symptoms of heart disease for a sample of 23 people.
+```{r}
+fat <- matrix(c(6, 4, 2, 11), 2, 2)
+dimnames(fat) <- list(diet = c("LoChol", "HiChol"),disease = c("No", "Yes"))
+fat
+```
+(a) Use chisq.test(fat) to test for association between diet and disease. Is there any indication that this test may not be appropriate here?
+```{r}
+chisq_result <- chisq.test(fat)
+chisq_result 
+```
+## My answer: 
+The chi-square test yields a non-significant result (p = 0.0741), suggesting no significant association between disease and diet. However, it's crucial to note that if the expected value of one or more cells falls below 5, the validity of the chi-square test may be compromised. The chi-square test relies on the assumption that the expected frequencies in each cell of the contingency table are reasonably large. When expected frequencies are too low, the chi-square statistic may not follow a chi-square distribution, which is essential for interpreting the p-value accurately. When expected frequencies are small, the chi-square test may overestimate the significance of observed associations, leading to potentially misleading conclusions. In such cases, the test may not provide reliable evidence of an association between variables. To address this issue, alternative tests like Fisher’s exact test can be used, as they do not rely on the assumption of expected frequencies greater than 5. Fisher’s exact test directly calculates the probability of obtaining the observed data or more extreme results under the null hypothesis, making it suitable for small sample sizes or when expected frequencies are low. Therefore, it's important to consider the adequacy of expected frequencies when interpreting the results of chi-square tests and to explore alternative tests when necessary to ensure the validity of statistical conclusions.
+
+(b) Use a fourfold display to test this association visually. Experiment with the different options for standardizing the margins, using the margin argument to fourfold(). What evidence is shown in different displays regarding whether the odds ratio differs significantly from 1?
+
+## My answer: Interpretation of Fourfold Display for Testing Association
+
+When using a fourfold display to visually test the association between diet and disease, we assess the significance of the odds ratio by examining the overlap of confidence bands. The interpretation hinges on whether the confidence bands overlap or not, indicating whether the odds ratio significantly differs from 1.
+
+**fourfold(fat, std = "ind.max"):** Standardizing the margins to the maximum independence model, non-overlapping confidence bands imply a significant difference in odds ratios from 1. This suggests a strong association between diet and disease, as the odds ratios are significantly different across diet groups.
+
+**fourfold(fat, margin=1):** By standardizing margin 1 (rows), we compare odds ratios within each level of disease. Non-overlapping confidence bands here indicate a significant difference in odds ratios between diet groups, supporting the presence of an association between diet and disease.
+
+**fourfold(fat, margin=2):** Standardizing margin 2 (columns) allows comparison of odds ratios within each level of diet. If confidence bands overlap significantly, it suggests no significant difference in odds ratios between disease groups. In this case, observing almost overlapping confidence bands in the "No disease" group indicates that odds ratios may not significantly differ between diet groups within this disease category.
+
+Overall, the absence of overlapping confidence bands across the displays provides visual evidence supporting a significant association between diet and disease, as indicated by the odds ratios significantly differing from 1. 
+ 
+```{r}
+library(vcd)
+fourfold(fat, std = "ind.max")   # unstandardized
+fourfold(fat, margin=1)          # equating diet (rows)
+fourfold(fat, margin=2)          # equating disease (columns)
+```
+
+
+(c) oddsratio(fat, log = FALSE) will give you a numerical answer. How does this compare to your visual impression from fourfold displays?
+
+## My answer: 
+In the fourfold display, we noticed that the confidence bands didn't overlap, suggesting a meaningful link between diet and disease. Now, when we used odds ratio calculation with log = False, we found the odds ratio to be 8.25. This number is significantly different from 1, meaning we reject the null hypothesis and confirm there's a connection between diet and disease. It matches the odds ratio we got from the analysis, indicating that people on high cholesterol diets are 8.25 times more likely to have heart disease than those on low cholesterol diets. This consistency between what we see and the numbers boosts our confidence in the association we observed. It shows how both numbers and visuals are important for understanding statistical relationships.
+
+```{r}
+oddsratio(fat, log = FALSE)
+```
+
+(d) With such a small sample, Fisher’s exact test may be more reliable for statistical inference. Use fisher.test(fat), and compare these results to what you have observed before.
+
+## My answer: 
+Using Fisher's exact test with the fisher.test() function on the small sample data set provided, we obtained a p-value of 0.03931. This indicates statistical significance at the conventional alpha level of 0.05, suggesting that there is a significant association between diet and disease. The calculated odds ratio is 7.40185, with a 95% confidence interval ranging from 0.8677432 to 105.5669391. This confirms that individuals on a high cholesterol diet are significantly more likely to have heart disease compared to those on a low cholesterol diet. The results from Fisher's exact test align with our previous observations from both the fourfold displays and the odds ratio calculation, providing further support for the association between diet and disease.
+
+```{r}
+fisher.test(fat)
+```
+
+
+(e) Write a one-paragraph summary of your findings and conclusions for this data set.
+## My answer: 
+
+Based on the analysis conducted, several key findings emerge regarding the association between diet and disease symptoms in the provided dataset. Initially, the chi-square test yielded a non-significant result, suggesting no significant association between diet and disease. However, given the small sample size and potential violation of chi-square test assumptions, alternative approaches were explored. Visual inspection using fourfold displays revealed non-overlapping confidence bands, indicating a significant difference in odds ratios between diet groups and supporting an association between diet and disease. This observation was further substantiated by the numerical odds ratio calculation, which showed a value of 8.25, significantly differing from 1. The consistency between visual and numerical findings reinforced confidence in the observed association. Additionally, Fisher's exact test provided corroborating evidence, yielding a significant p-value of 0.03931 and an odds ratio of 7.40185, further supporting the presence of a significant association between diet and disease. Collectively, these analyses underscore the importance of considering both numerical and visual approaches to ensure robust statistical inference, especially in small sample settings.
+
+**Exercise 4.2** The data set Abortion in vcdExtra gives a 2 * 2 * 2 table of opinions regarding abortion in relation to sex and status of the respondent. This table has the following structure:
+```{r}
+data("Abortion", package = "vcdExtra")
+str(Abortion)
+```
+(a) Taking support for abortion as the outcome variable, produce fourfold displays showing the association with sex, stratified by status.
+```{r}
+data("Abortion", package="vcdExtra")
+structable(Abortion)
+```
+```{r}
+stat_abor<-aperm(Abortion, c(1,3,2))
+fourfold(stat_abor)
+```
+
+(b) Do the same for the association of support for abortion with status, stratified by sex.
+```{r}
+sex_abor<-aperm(Abortion, c(2,3,1))
+fourfold(sex_abor)
+```
+(c) For each of the problems above, use oddsratio() to calculate the numerical values of the odds ratio, as stratified in the question.
+```{r}
+summary(oddsratio(stat_abor))
+```
+```{r}
+summary(oddsratio(sex_abor))
+```
+(d) Write a brief summary of how support for abortion depends on sex and status.
+## My answer: 
+In overall, in supporting for abortion, women and low status people are more supportive than men and high status people. More details:
+When examining support for abortion stratified by status, individuals with a "Lo" status exhibit a significantly higher odds ratio of supporting abortion (Estimate: 0.74555, p < 0.001) compared to those with a "Hi" status. This suggests a stronger association between having a "Lo" status and supporting abortion. However, the estimate odds ratio for the "Hi" status is not statistically significant (Estimate: -0.01889, p = 0.9127). This means that there is no meaningful association found between having a "Hi" status and supporting abortion. In other words, individuals with a "Hi" status are not significantly more or less likely to support abortion compared to those with a "Lo" status. Therefore, in this dataset, the "Hi" status does not appear to have a notable impact on opinions regarding abortion. 
+When considering support for abortion stratified by sex, females demonstrate a significantly higher odds ratio of supporting abortion (Estimate: 0.56346, p = 0.002481) compared to males. However, the odds ratio for males is not statistically significant (Estimate: -0.20098, p = 0.219941), indicating that the association between sex and support for abortion may be weaker or non-existent in this dataset. 
+
+**Exercise 4.3** The JobSat table on income and job satisfaction created in Example 2.5 is contained in the vcdExtra package.
+```{r}
+library(vcdExtra)
+data("JobSat", package = "vcdExtra")
+str(JobSat)
+dim(JobSat)
+```
+
+(a) Carry out a standard X^2 test for association between income and job satisfaction. Is there any indication that this test might not be appropriate? Repeat this test using simulate.p.value = TRUE to obtain a Monte Carlo test that does not depend on large sample size. Does this change your conclusion?
+## My answer: 
+Conducting a standard chi-squared test for association between income and job satisfaction yields a chi-squared statistic of 5.9655 with 9 degrees of freedom and a p-value of 0.7434. This test result suggests that there may not be a significant association between income and job satisfaction. However, it's important to note that a warning message is displayed, indicating that the chi-squared approximation may not be appropriate due to potentially low expected cell frequencies.
+To address this concern, a Monte Carlo simulation is performed using simulate.p.value = TRUE. The simulated p-value obtained from the chi-squared test is 0.7856, which is similar to the p-value obtained from the standard chi-squared test. Despite the warning and the use of the simulated p-value, both tests produce consistent results, indicating no significant association between income and job satisfaction in this dataset.
+
+```{r}
+chisq_JobSat <- chisq.test(JobSat)
+chisq_JobSat
+```
+```{r}
+chisq_JobSat_simulated <- chisq.test(JobSat, simulate.p.value = TRUE)
+chisq_JobSat_simulated
+```
+
+(b) Both variables are ordinal, so CMH tests may be more powerful here. Carry out that analysis. What do you conclude?
+
+## My answer: The CMH test explores associations between income and job satisfaction, treating both variables as ordinal. It tests several hypotheses:
+  Nonzero Correlation Hypothesis (cor): Evaluates if there's a correlation between income and job satisfaction. The chi-squared statistic is 2.98 with 1 degree of freedom, p = 0.08, indicating a borderline association.
+  Row Mean Scores Differ Hypothesis (rmeans): Assesses if mean income scores differ across job satisfaction levels. Chi-squared: 4.48 with 3 degrees of freedom, p = 0.21, showing no significant difference.
+  Column Mean Scores Differ Hypothesis (cmeans): Checks if mean job satisfaction scores differ across income levels. Chi-squared: 3.10 with 3 degrees of freedom, p = 0.38, suggesting no significant difference.
+  General Association Hypothesis (general): Tests overall association between income and job satisfaction. Chi-squared: 5.90 with 9 degrees of freedom, p = 0.75, indicating no significant overall association.
+In summary, the CMH test does not find strong evidence for a significant association between income and job satisfaction in this dataset.
+
+```{r}
+CMHtest(JobSat)
+```
+
+**Exercise 4.6** The two-way table Mammograms in vcdExtra gives ratings on the severity of diagnosis of 110 mammograms by two raters.
+
+(a) Assess the strength of agreement between the raters using Cohen’s k, both unweighted and weighted.
+## My answer: 
+Both unweighted and weighted κ statistics suggest substantial agreement, with the Fleiss-Cohen weighted kappa showing a larger value due to its emphasis on "near-misses." The unweighted kappa for Mammograms is 0.3713 with a standard error (ASE) of 0.06033 and a z-score of 6.154 (p < 0.001), indicating significant agreement. In contrast, the weighted kappa is higher at 0.5964, with an ASE of 0.04923 and a z-score of 12.114 (p < 0.001), reflecting stronger agreement. When using Fleiss-Cohen weights, the unweighted kappa remains the same, while the weighted kappa substantially increases to 0.7641, with an ASE of 0.03996 and a z-score of 19.122 (p < 0.001), demonstrating even greater agreement between observations.
+
+```{r}
+Kappa(Mammograms)
+Mammograms
+```
+```{r}
+Kappa(Mammograms, weights= "Fleiss-Cohen")
+```
+
+(b) Use agreementplot() for a graphical display of agreement here.
+By default, agreementplot() showcases the weighted display. To generate the unweighted version, I specify weights=1.
+
+```{r}
+agreementplot(Mammograms, main="Unweighted", weights=1)
+agreementplot(Mammograms, main="Weighted")
+```
+
+(c) Compare the Kappa measures with the results from assocstats(). What is a reasonable interpretation of each of these measures?
+
+## My answer: 
+  Kappa Measures: The Kappa measures provide a specific metric of agreement, indicating the degree of agreement between the observed and expected classifications beyond chance. For example, the unweighted Kappa (0.3713) suggests fair to moderate agreement, while the weighted Kappa (0.5964) implies substantial agreement.
+  assocstats() Results: assocstats() provides a broader view of the association between variables, primarily through chi-squared tests and related statistics. In this case, the likelihood ratio and Pearson chi-squared tests indicate a significant association between the variables in the Mammograms dataset. Additionally, the contingency coefficient (0.657) and Cramer's V (0.503) suggest a moderate to strong association between the variables.
+  Overall, the Kappa measures focus specifically on agreement beyond chance, while assocstats() offers a comprehensive analysis of the association between variables, including measures of statistical significance and strength of association. Both sets of results are valuable in understanding the relationship between variables, providing complementary insights into the data.
+```{r}
+assocstats(Mammograms)
+```
+
+**Exercise 4.7** Agresti and Winner (1997) gave the data in Table 4.8 on the ratings of 160 movies by the reviewers Gene Siskel and Roger Ebert for the period from April 1995 through September 1996. The rating categories were Con (“thumbs down”), Mixed, and Pro (“thumbs up”).
+
+Movie ratings by Siskel & Ebert, April 1995–September 1996. Source:  Agresti and Winner (1997)
+
+```{r}
+data2 <- matrix(c(24, 8, 13,
+                 8, 13, 11,
+                 10, 9, 64),
+                3, 3, byrow=TRUE)
+dimnames(data2) <- list(Siskal=c("Con", "Mixed", "Pro"), Ebert =c("Con", "Mixed", "Pro"))
+data2
+```
+
+(a) Assess the strength of agreement between the raters using Cohen’s k, both unweighted and weighted.
+
+## My answer: 
+The Cohen's kappa measures, both unweighted and weighted, suggest a moderate level of agreement between the raters. The unweighted Cohen's kappa is 0.3888, while the weighted Cohen's kappa is slightly higher at 0.4269. Both measures have highly significant p-values, indicating that the observed agreement between the raters is unlikely to be due to chance.
+
+```{r}
+Kappa(data2)
+```
+
+(b) Use agreementplot() for a graphical display of agreement here.
+
+## My answer: 
+The agreement plot illustrates that both Siskal and Ebert predominantly assigned "thumbs up" ratings where their agreement was highest. The most significant discrepancies in their ratings occurred when one of them provided a "Mixed" rating.
+
+```{r}
+agreementplot(data2)
+```
+
+(c) Assess the hypothesis that the ratings are symmetric around the main diagonal, using an appropriate x^2 test. Hint: Symmetry for a square table T means that t_ij = t_ji for i≠j. The expected frequencies under the hypothesis of symmetry are the average of the off-diagonal cells, E = (T + T^T)/2.
+
+## My answer: 
+Assessing the hypothesis of symmetry around the main diagonal using an appropriate chi-squared test yields a chi-squared statistic of 0.5913 with 3 degrees of freedom and a p-value of 0.8984. This indicates that there is no significant deviation from symmetry. The results align with those from the McNemar's chi-squared test, which also yields a p-value of 0.8984.
+
+```{r}
+E <- (data2 + t(data2))/2
+(Chisq <- sum((data2 - E)^2 / E))
+```
+```{r}
+mult <- nrow(E) * (nrow(E)-1) /2
+pchisq(Chisq, mult, lower.tail = FALSE)
+```
+
+(d) Compare the results with the output of mcnemar.test().
+## My answer:
+The results from McNemar's chi-squared test also yield a chi-squared statistic of 0.5913 with 3 degrees of freedom and a p-value of 0.8984. This aligns with the findings from the chi-squared test assessing symmetry around the main diagonal, indicating no significant deviation from symmetry between the ratings provided by Siskal and Ebert.
+
+```{r}
+mcnemar.test(data2)
+```
+
+**Exercise 4.8** For the VisualAcuity data set:
+
+(a) Use the code shown in the text to create the table form, VA.tab.
+## My answer:
+The VisualAcuity dataset is first transformed into a contingency table called VA.tab using the provided code. This table summarizes the frequency of different visual acuity grades for the right and left eyes, categorized as high, 2, 3, and low, across different genders.
+
+```{r}
+data("VisualAcuity", package = "vcd")
+VA <- xtabs(Freq ~ right + left + gender, data = VisualAcuity)
+dimnames(VA)[1:2] <- list(c("high", 2, 3, "low"))
+names(dimnames(VA))[1:2] <- paste(c("Right", "Left"), "eye grade")
+```
+
+
+(b) Perform the CMH tests for this table.
+## My answer:
+The Cochran-Mantel-Haenszel (CMH) tests are conducted on the VA table to assess the association between visual acuity grades and gender. The results indicate significant associations across different hypotheses tested, including nonzero correlation, differences in row mean scores, differences in column mean scores, and a general association between visual acuity and gender.
+
+```{r}
+CMHtest(VA)
+```
+
+
+(c) Use the woolf_test() described in Section 4.3.2 to test whether the association between
+left and right eye acuity can be considered the same for men and women.
+## My answer:
+To investigate whether the association between left and right eye acuity varies by gender, the Woolf-test on Homogeneity of Odds Ratios is performed. The test results in a chi-squared statistic of 0.089189 with 1 degree of freedom and a p-value of 0.7652, suggesting no significant difference in the association between left and right eye acuity across genders.
+
+```{r}
+woolf_test(VA)
+```
+
+
+
+
+
+
+
